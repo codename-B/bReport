@@ -165,9 +165,10 @@ public class ReportPlugin extends JavaPlugin {
 				return true;
 			} else {
 				Player player = (Player) sender;
-				Location loc = rm.getLocation(rm.getReport(id).getLocation());
+				Report r = rm.getReport(id);
+				Location loc = rm.getLocation(r.getLocation());
 				player.teleport(loc);
-				sender.sendMessage(ChatColor.GREEN+"[bReport] Teleported to the location of the report.");
+				sender.sendMessage(ChatColor.GREEN+"[bReport] Teleported to the location of the report - ID: "+r.getID());
 				return true;
 			}
 		} else if(cname.equals("modchat")) {
