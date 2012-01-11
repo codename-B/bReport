@@ -77,7 +77,7 @@ public class ReportPlugin extends JavaPlugin {
 					}
 				}
 				// Log to console too
-				log("[bReport] A new report has been filed by "+reporter+" - ID: "+r.getID());
+				log("A new report has been filed by "+reporter+" - ID: "+r.getID());
 				return true;
 			} else {
 				sender.sendMessage(ChatColor.RED+"[bReport] Only players can use the '/report' command!");
@@ -188,7 +188,8 @@ public class ReportPlugin extends JavaPlugin {
 				}
 			}
 			// Also log it to the console
-			log("[bReport] "+name+" - "+message);
+			log(name+" - "+message);
+			return true;
 		}
 		return false;
 	}
