@@ -1,0 +1,16 @@
+name: bReport
+version: 1.0
+author: codename_B
+website: http://tetragaming.com/codename_B/
+main: de.bananaco.report.ReportPlugin
+commands:
+    report:
+        usage: /<command> message
+    read:
+        usage: /<command> id
+    gotoreport:
+        usage: /<command> id
+    resolve:
+        usage: /<command> id
+    unresolve:
+        usage: /<command> id
