@@ -1,5 +1,6 @@
 package de.bananaco.report;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,11 +70,11 @@ public class ReportPlugin extends JavaPlugin {
 				String[] report = args;
 				// And file the report
 				Report r = rm.createReport(reporter, report, ((Player) sender).getLocation());
-				sender.sendMessage(ChatColor.GREEN+"[bReport] A report has been filed for you - ID: "+r.getID());
+				sender.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"A report has been filed for you - ID: "+ChatColor.AQUA+r.getID());
 				// Inform all online admins
 				for(Player player : getServer().getOnlinePlayers()) {
 					if(player.hasPermission("breport.read")) {
-						player.sendMessage(ChatColor.GREEN+"[bReport] A new report has been filed by "+reporter+" - ID: "+r.getID());
+						player.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"A new report has been filed by "+ChatColor.AQUA+reporter+ChatColor.GRAY+" - ID: "+ChatColor.AQUA+r.getID());
 					}
 				}
 				// Log to console too
@@ -87,24 +88,23 @@ public class ReportPlugin extends JavaPlugin {
 		else if(cname.equals("read")) {
 			if(args.length == 0) {
 				List<Report> reports = rm.getUnresolvedReports();
+				List<String> prints = new ArrayList<String>();
 				// How many shown?
 				int shown = 0;
-				StringBuilder sb = new StringBuilder();
-				for(int i=0; i<reports.size() && i<6; i++) {
+				int show = reports.size();
+				if(show > 6)
+					show = 6;
+				for(int i=show; i>=0; i--) {
 					Report r = reports.get(i);
 					// Build the String
-					if(i==reports.size()-1) {
-						// End with a full stop
-						sb.append(r.getReporter()+" - ID: "+r.getID()+".");
-					} else {
-						// Comma in the middle
-						sb.append(r.getReporter()+" - ID: "+r.getID()+", ");
-					}
+					prints.add(ChatColor.AQUA+r.getReporter()+ChatColor.GRAY+" - ID: "+ChatColor.AQUA+r.getID());
 					shown++;
 				}
-				sender.sendMessage(ChatColor.GREEN+"[bReport] Showing "+shown+"/"+reports.size()+" unread reports");
+				sender.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"Showing "+ChatColor.AQUA+shown+"/"+reports.size()+ChatColor.GRAY+" unread reports");
+				// New line for each report
 				if(reports.size() > 0)
-					sender.sendMessage(sb.toString());
+					for(int i=0; i<prints.size(); i++)
+						sender.sendMessage(prints.get(i));
 				else
 					sender.sendMessage(ChatColor.RED+"** NOTHING TO REPORT **");
 				return true;
@@ -115,13 +115,9 @@ public class ReportPlugin extends JavaPlugin {
 					return true;
 				} else {
 					Report report = rm.getReport(id);
-					sender.sendMessage(ChatColor.GREEN+"[bReport] ID:"+report.getID());
-					sender.sendMessage("Report by: "+report.getReporter());
-					sender.sendMessage(report.getReport());
-					if(!report.getResolved()) {
-						sender.sendMessage("Use '/gotoreport "+id+"' to go to where this report was made.");
-						sender.sendMessage("Use '/resolve "+id+"' to resolve this report.");
-					}
+					// Send the report data
+					sender.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"Report by: "+ChatColor.AQUA+report.getReporter());
+					sender.sendMessage(ChatColor.GRAY+"** "+report.getReport());
 					return true;
 				}
 			}
@@ -132,13 +128,17 @@ public class ReportPlugin extends JavaPlugin {
 				return true;
 			} else {
 				Report report = rm.getReport(id);
+				if(report.getResolved()) {
+					sender.sendMessage(ChatColor.RED+"[bReport] That report is already resolved!");
+					return true;
+				}
 				report.setResolved(true);
-				sender.sendMessage(ChatColor.GREEN+"[bReport] Report resolved.");
+				sender.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"Report resolved.");
 				// Inform the player that their report has been resolved if they are online
 				if(getServer().getPlayerExact(report.getReporter()) != null) {
 					Player player = getServer().getPlayerExact(report.getReporter());
-					player.sendMessage(ChatColor.GREEN+"[bReport] A report you filed has been resolved - ID: "+report.getID());
-					player.sendMessage(report.getReport());
+					player.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"A report you filed has been resolved by "+ChatColor.AQUA+getName(sender));
+					player.sendMessage(ChatColor.GRAY+"** "+report.getReport());
 				}
 				return true;
 			}
@@ -149,8 +149,12 @@ public class ReportPlugin extends JavaPlugin {
 				return true;
 			} else {
 				Report report = rm.getReport(id);
+				if(!report.getResolved()) {
+					sender.sendMessage(ChatColor.RED+"[bReport] That report is not yet resolved!");
+					return true;
+				}
 				report.setResolved(false);
-				sender.sendMessage(ChatColor.GREEN+"[bReport] Report unresolved.");
+				sender.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"Report unresolved.");
 				return true;
 			}
 		} else if(cname.equals("gotoreport") && args.length > 0) {
@@ -168,16 +172,12 @@ public class ReportPlugin extends JavaPlugin {
 				Report r = rm.getReport(id);
 				Location loc = rm.getLocation(r.getLocation());
 				player.teleport(loc);
-				sender.sendMessage(ChatColor.GREEN+"[bReport] Teleported to the location of the report - ID: "+r.getID());
+				sender.sendMessage(ChatColor.AQUA+"[bReport] "+ChatColor.GRAY+"Teleported to the location of the report - ID: "+ChatColor.AQUA+r.getID());
 				return true;
 			}
-		} else if(cname.equals("modchat")) {
-			String name = "";
-			if(!(sender instanceof Player)) {
-				name = "CONSOLE";
-			} else {
-				name = sender.getName();
-			}
+		} else if(cname.equals("modchat") && args.length > 0) {
+			String name = getName(sender);
+
 			StringBuilder sb = new StringBuilder();
 			for(int i=0; i<args.length; i++)
 				sb.append(args[i]).append(" ");
@@ -185,14 +185,24 @@ public class ReportPlugin extends JavaPlugin {
 			// Send the message to online mods/admins
 			for(Player player : getServer().getOnlinePlayers()) {
 				if(player.hasPermission("breport.modchat")) {
-					player.sendMessage(ChatColor.GREEN+"[bReport] "+name+" - "+message);
+					player.sendMessage(ChatColor.GRAY+"[bReport] "+ChatColor.AQUA+name+ChatColor.GRAY+": "+message);
 				}
 			}
 			// Also log it to the console
-			log(name+" - "+message);
+			log(name+": "+message);
 			return true;
 		}
 		return false;
+	}
+	
+	public String getName(CommandSender sender) {
+		String name;
+		if(!(sender instanceof Player)) {
+			name = "CONSOLE";
+		} else {
+			name = sender.getName();
+		}
+		return name;
 	}
 
 }

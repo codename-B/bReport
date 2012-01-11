@@ -2,6 +2,8 @@ package de.bananaco.report;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,20 @@ public class ReportManager {
 	private Map<String, Report> reports = new HashMap<String, Report>();
 	private final File file = new File("plugins/bReport/reports.yml");
 	private final YamlConfiguration config = new YamlConfiguration();
+	// Used to sort the list of unresolved reports
+	private final Comparator<Report> comparReport = new Comparator<Report>()
+	{
+		public int compare(Report o0, Report o1) {
+			int i0 = Integer.parseInt(o0.getID());
+			int i1 = Integer.parseInt(o1.getID());
+			if(i0>i1)
+				return -1;
+			if(i0<i1)
+				return 1;
+			else
+				return 0;
+		}
+	};
 
 	// private so that it can't be instantiated
 	private ReportManager() {};
@@ -59,11 +75,13 @@ public class ReportManager {
 			if(!r.getResolved())
 				rList.add(r);
 		}
+		// Sort the reports!
+		Collections.sort(rList, comparReport);
 		return rList;
 	}
 
 	/**
-	 * Gets a report object by its id
+	 * Gets a report Report by its id
 	 * @param id
 	 * @return Report
 	 */
@@ -135,7 +153,7 @@ public class ReportManager {
 	}
 
 	/**
-	 * Deserialises a Location object
+	 * Deserialises a Location
 	 * @param input
 	 * @return Location
 	 */
@@ -149,7 +167,7 @@ public class ReportManager {
 	}
 
 	/**
-	 * Serialises a Location object
+	 * Serialises a Location
 	 * @param input
 	 * @return String
 	 */
