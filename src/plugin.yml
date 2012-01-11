@@ -14,3 +14,7 @@ commands:
         usage: /<command> id
     unresolve:
         usage: /<command> id
+    modchat:
+        aliases: [mc, mod]
+        usage: /<command> message
+        

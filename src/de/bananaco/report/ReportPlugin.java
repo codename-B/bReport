@@ -43,6 +43,7 @@ public class ReportPlugin extends JavaPlugin {
 		children.put("breport.gotoreport", true);
 		children.put("breport.resolve", true);
 		children.put("breport.unresolve", true);
+		children.put("breport.modchat", true);
 		// Put them under a parent
 		Permission perm = new Permission("breport.*", PermissionDefault.OP, children);
 		getServer().getPluginManager().addPermission(perm);
@@ -55,7 +56,7 @@ public class ReportPlugin extends JavaPlugin {
 		String cname = command.getName().toLowerCase();
 		// Permission check for players
 		if(sender instanceof Player) {
-			if(!sender.hasPermission("report."+cname)) {
+			if(!sender.hasPermission("breport."+cname)) {
 				sender.sendMessage(ChatColor.RED+"[bReport] You don't have permission to use the '/"+cname+"' command.");
 				return true;
 			}
@@ -67,8 +68,16 @@ public class ReportPlugin extends JavaPlugin {
 				String reporter = sender.getName();
 				String[] report = args;
 				// And file the report
-				rm.createReport(reporter, report, ((Player) sender).getLocation());
-				sender.sendMessage(ChatColor.GREEN+"[bReport] A report has been filed for you!");
+				Report r = rm.createReport(reporter, report, ((Player) sender).getLocation());
+				sender.sendMessage(ChatColor.GREEN+"[bReport] A report has been filed for you - ID: "+r.getID());
+				// Inform all online admins
+				for(Player player : getServer().getOnlinePlayers()) {
+					if(player.hasPermission("breport.read")) {
+						player.sendMessage(ChatColor.GREEN+"[bReport] A new report has been filed by "+reporter+" - ID: "+r.getID());
+					}
+				}
+				// Log to console too
+				log("[bReport] A new report has been filed by "+reporter+" - ID: "+r.getID());
 				return true;
 			} else {
 				sender.sendMessage(ChatColor.RED+"[bReport] Only players can use the '/report' command!");
@@ -78,6 +87,8 @@ public class ReportPlugin extends JavaPlugin {
 		else if(cname.equals("read")) {
 			if(args.length == 0) {
 				List<Report> reports = rm.getUnresolvedReports();
+				// How many shown?
+				int shown = 0;
 				StringBuilder sb = new StringBuilder();
 				for(int i=0; i<reports.size() && i<6; i++) {
 					Report r = reports.get(i);
@@ -89,8 +100,9 @@ public class ReportPlugin extends JavaPlugin {
 						// Comma in the middle
 						sb.append(r.getReporter()+" - ID: "+r.getID()+", ");
 					}
+					shown++;
 				}
-				sender.sendMessage(ChatColor.GREEN+"[bReport] Showing first unread reports");
+				sender.sendMessage(ChatColor.GREEN+"[bReport] Showing "+shown+"/"+reports.size()+" unread reports");
 				if(reports.size() > 0)
 					sender.sendMessage(sb.toString());
 				else
@@ -122,6 +134,12 @@ public class ReportPlugin extends JavaPlugin {
 				Report report = rm.getReport(id);
 				report.setResolved(true);
 				sender.sendMessage(ChatColor.GREEN+"[bReport] Report resolved.");
+				// Inform the player that their report has been resolved if they are online
+				if(getServer().getPlayerExact(report.getReporter()) != null) {
+					Player player = getServer().getPlayerExact(report.getReporter());
+					player.sendMessage(ChatColor.GREEN+"[bReport] A report you filed has been resolved! ID: "+report.getID());
+					player.sendMessage(report.getReport());
+				}
 				return true;
 			}
 		} else if(cname.equals("unresolve") && args.length > 0) {
@@ -152,6 +170,25 @@ public class ReportPlugin extends JavaPlugin {
 				sender.sendMessage(ChatColor.GREEN+"[bReport] Teleported to the location of the report.");
 				return true;
 			}
+		} else if(cname.equals("modchat")) {
+			String name = "";
+			if(!(sender instanceof Player)) {
+				name = "CONSOLE";
+			} else {
+				name = sender.getName();
+			}
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i<args.length; i++)
+				sb.append(args[i]).append(" ");
+			String message = sb.toString();
+			// Send the message to online mods/admins
+			for(Player player : getServer().getOnlinePlayers()) {
+				if(player.hasPermission("breport.modchat")) {
+					player.sendMessage(ChatColor.GREEN+"[bReport] "+name+" - "+message);
+				}
+			}
+			// Also log it to the console
+			log("[bReport] "+name+" - "+message);
 		}
 		return false;
 	}

@@ -37,13 +37,15 @@ public class ReportManager {
 	 * Intended to be used to create a report directly from onCommand
 	 * @param reporter
 	 * @param report
+	 * @return Report created
 	 */
-	public void createReport(String reporter, String[] report, Location location) {
+	public Report createReport(String reporter, String[] report, Location location) {
 		String id = String.valueOf(reports.size());
 		StringBuilder sb = new StringBuilder();
 		for(String r : report)
 			sb.append(r).append(" ");
 				reports.put(id, new Report(reporter, sb.toString(), id, getLocation(location)));
+		return reports.get(id);
 	}
 
 	/**
