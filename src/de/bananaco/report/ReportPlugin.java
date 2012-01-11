@@ -137,7 +137,7 @@ public class ReportPlugin extends JavaPlugin {
 				// Inform the player that their report has been resolved if they are online
 				if(getServer().getPlayerExact(report.getReporter()) != null) {
 					Player player = getServer().getPlayerExact(report.getReporter());
-					player.sendMessage(ChatColor.GREEN+"[bReport] A report you filed has been resolved! ID: "+report.getID());
+					player.sendMessage(ChatColor.GREEN+"[bReport] A report you filed has been resolved - ID: "+report.getID());
 					player.sendMessage(report.getReport());
 				}
 				return true;
