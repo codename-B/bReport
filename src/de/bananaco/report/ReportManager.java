@@ -15,15 +15,16 @@ import org.bukkit.configuration.file.YamlConfiguration;
  * Use ReportManager.getInstance() rather than creating a new instance
  */
 public class ReportManager {
-	
+
 	private static final ReportManager instance = new ReportManager();
-	
+
 	private Map<String, Report> reports = new HashMap<String, Report>();
 	private final File file = new File("plugins/bReport/reports.yml");
 	private final YamlConfiguration config = new YamlConfiguration();
-	
+
 	// private so that it can't be instantiated
 	private ReportManager() {};
+
 	/**
 	 * Use this to get the instance
 	 * @return ReportManager instance
@@ -31,7 +32,7 @@ public class ReportManager {
 	public static ReportManager getInstance() {
 		return instance;
 	}
-	
+
 	/**
 	 * Intended to be used to create a report directly from onCommand
 	 * @param reporter
@@ -42,9 +43,9 @@ public class ReportManager {
 		StringBuilder sb = new StringBuilder();
 		for(String r : report)
 			sb.append(r).append(" ");
-		reports.put(id, new Report(reporter, sb.toString(), id, getLocation(location)));
+				reports.put(id, new Report(reporter, sb.toString(), id, getLocation(location)));
 	}
-	
+
 	/**
 	 * Returns a List<Report> of unresolved reports
 	 * @return List<Report> unresolved
@@ -58,7 +59,7 @@ public class ReportManager {
 		}
 		return rList;
 	}
-	
+
 	/**
 	 * Gets a report object by its id
 	 * @param id
@@ -67,37 +68,37 @@ public class ReportManager {
 	public Report getReport(String id) {
 		return reports.get(id);
 	}
-	
+
 	/**
 	 * Loads the reports.yml
 	 */
 	public void load() {
 		try {
-		fileCheck();
-		config.load(file);
-		Set<String> keys = config.getKeys(false);
-		if(keys != null && keys.size() > 0) {
-			// Reference
-			String reporter;
-			String report;
-			boolean resolved;
-			String id;
-			String location;
-			// And load
-			for(String key : keys) {
-				reporter = config.getString(key+".reporter");
-				report = config.getString(key+".report");
-				resolved = config.getBoolean(key+".resolved");
-				location = config.getString(key+".location", "world.0.70.0");
-				id = key;
-				reports.put(id, new Report(reporter, report, resolved, id, location));
+			fileCheck();
+			config.load(file);
+			Set<String> keys = config.getKeys(false);
+			if(keys != null && keys.size() > 0) {
+				// Reference
+				String reporter;
+				String report;
+				boolean resolved;
+				String id;
+				String location;
+				// And load
+				for(String key : keys) {
+					reporter = config.getString(key+".reporter");
+					report = config.getString(key+".report");
+					resolved = config.getBoolean(key+".resolved");
+					location = config.getString(key+".location", "world.0.70.0");
+					id = key;
+					reports.put(id, new Report(reporter, report, resolved, id, location));
+				}
 			}
-		}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Saves the reports.yml
 	 */
@@ -113,13 +114,13 @@ public class ReportManager {
 			}
 		}
 		try {
-		// Actually save the edited config
-		config.save(file);
+			// Actually save the edited config
+			config.save(file);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Internal method, creates the file if it doesn't exist
 	 * @throws Exception
@@ -130,7 +131,7 @@ public class ReportManager {
 			file.createNewFile();
 		}
 	}
-	
+
 	/**
 	 * Deserialises a Location object
 	 * @param input
@@ -144,7 +145,7 @@ public class ReportManager {
 		int z = Integer.parseInt(data[3]);
 		return new Location(world, x, y, z);
 	}
-	
+
 	/**
 	 * Serialises a Location object
 	 * @param input

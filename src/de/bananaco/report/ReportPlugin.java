@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class ReportPlugin extends JavaPlugin {
 
 	private ReportManager rm;
-	
+
 	@Override
 	public void onDisable() {
 		rm.save();
@@ -34,7 +34,7 @@ public class ReportPlugin extends JavaPlugin {
 	public void log(String message) {
 		System.out.println("[bReport] "+message);
 	}
-	
+
 	public void registerPermissions() {
 		Map<String, Boolean> children = new HashMap<String, Boolean>();
 		// Add all the permission nodes we'll be using
