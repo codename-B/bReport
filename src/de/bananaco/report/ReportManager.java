@@ -63,6 +63,18 @@ public class ReportManager {
 				reports.put(id, new Report(reporter, sb.toString(), id, getLocation(location)));
 		return reports.get(id);
 	}
+	
+	/**
+	 * For use externally printing an args[]
+	 * @param report
+	 * @return String
+	 */
+	public String getString(String[] report) {
+		StringBuilder sb = new StringBuilder();
+		for(String r : report)
+			sb.append(r).append(" ");
+		return sb.toString();
+	}
 
 	/**
 	 * Returns a List<Report> of unresolved reports

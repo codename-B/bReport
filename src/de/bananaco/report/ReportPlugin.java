@@ -68,6 +68,23 @@ public class ReportPlugin extends JavaPlugin {
 				// Outline our variables
 				String reporter = sender.getName();
 				String[] report = args;
+				
+				// How many reports has the user filed before?
+				String message = rm.getString(report);
+				int num = 0;
+				// Calculate how many unresolved reports the user has
+				for(Report rp : rm.getUnresolvedReports()) {
+					if(rp.getReporter().equalsIgnoreCase(reporter) && !rp.getResolved()) {
+						int distance = LevenshteinImpl.distance(rp.getReport().toLowerCase(), message.toLowerCase());
+						if(distance <= 6)
+							num++;
+					}
+				}
+				// And shout at them if there's too many similar reports
+				if(num > 0) {
+					sender.sendMessage(ChatColor.RED+"[bR] You already have a ticket about that.");
+					return true;
+				}
 				// And file the report
 				Report r = rm.createReport(reporter, report, ((Player) sender).getLocation());
 				sender.sendMessage(ChatColor.AQUA+"[bR] "+ChatColor.GRAY+"A report has been filed for you - ID: "+ChatColor.AQUA+r.getID());
