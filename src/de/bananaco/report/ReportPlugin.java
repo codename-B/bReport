@@ -17,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class ReportPlugin extends JavaPlugin {
 
 	private ReportManager rm;
+	private Config config = new Config();
 
 	@Override
 	public void onDisable() {
@@ -29,6 +30,7 @@ public class ReportPlugin extends JavaPlugin {
 		registerPermissions();
 		rm = ReportManager.getInstance();
 		rm.load();
+		config.load();
 		log("Enabled");
 	}
 
@@ -76,7 +78,7 @@ public class ReportPlugin extends JavaPlugin {
 				for(Report rp : rm.getUnresolvedReports()) {
 					if(rp.getReporter().equalsIgnoreCase(reporter) && !rp.getResolved()) {
 						int distance = LevenshteinImpl.distance(rp.getReport().toLowerCase(), message.toLowerCase());
-						if(distance <= 6)
+						if(distance <= config.getLevenshtein())
 							num++;
 					}
 				}
@@ -109,8 +111,8 @@ public class ReportPlugin extends JavaPlugin {
 				// How many shown?
 				int shown = 0;
 				int show = reports.size()-1;
-				if(show > 6)
-					show = 6;
+				if(show > config.getTicketDisplay()-1)
+					show = config.getTicketDisplay()-1;
 				for(int i=show; i>=0; i--) {
 					Report r = reports.get(i);
 					// Build the String
