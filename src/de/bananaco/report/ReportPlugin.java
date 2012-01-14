@@ -10,6 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Priority;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,6 +29,7 @@ public class ReportPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, new ReportListener(), Priority.Normal, this);
 		registerPermissions();
 		rm = ReportManager.getInstance();
 		rm.load();
@@ -70,7 +73,11 @@ public class ReportPlugin extends JavaPlugin {
 				// Outline our variables
 				String reporter = sender.getName();
 				String[] report = args;
-				
+				// How many words?
+				if(report.length < 3) {
+					sender.sendMessage(ChatColor.RED+"[bR] Reports must be at least 3 words long.");
+					return true;
+				}
 				// How many reports has the user filed before?
 				String message = rm.getString(report);
 				int num = 0;
@@ -205,7 +212,7 @@ public class ReportPlugin extends JavaPlugin {
 			// Send the message to online mods/admins
 			for(Player player : getServer().getOnlinePlayers()) {
 				if(player.hasPermission("breport.modchat")) {
-					player.sendMessage(ChatColor.GRAY+"[bR] "+ChatColor.AQUA+name+ChatColor.GRAY+": "+message);
+					player.sendMessage(ChatColor.AQUA+"[bR] "+ChatColor.GRAY+name+ChatColor.AQUA+": "+message);
 				}
 			}
 			// Also log it to the console
