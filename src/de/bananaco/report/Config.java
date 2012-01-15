@@ -10,6 +10,7 @@ public class Config {
 	
 	private int levenshtein = 6;
 	private int ticketDisplay = 7;
+	private boolean showMessage = false;
 	
 	/**
 	 * The "distance" required between Strings
@@ -39,8 +40,10 @@ public class Config {
 			// Set the values
 			this.levenshtein = config.getInt("levenshtein", this.levenshtein);
 			this.ticketDisplay = config.getInt("ticket-display", this.ticketDisplay);			
+			this.showMessage = config.getBoolean("show-message", showMessage);
 			config.set("levenshtein", this.levenshtein);
 			config.set("ticket-display", this.ticketDisplay);
+			config.set("show-message", showMessage);
 			// Save the file
 			config.save(file);
 		} catch (Exception e) {
@@ -57,6 +60,10 @@ public class Config {
 			file.getParentFile().mkdirs();
 			file.createNewFile();
 		}
+	}
+
+	public boolean showMessage() {
+		return showMessage;
 	}
 
 }

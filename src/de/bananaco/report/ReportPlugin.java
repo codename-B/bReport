@@ -20,7 +20,8 @@ public class ReportPlugin extends JavaPlugin {
 
 	private ReportManager rm;
 	private Config config = new Config();
-
+	private ReportListener listener;
+	
 	@Override
 	public void onDisable() {
 		rm.save();
@@ -29,7 +30,9 @@ public class ReportPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, new ReportListener(), Priority.Normal, this);
+		listener = new ReportListener(config);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Normal, this);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, listener, Priority.Normal, this);
 		registerPermissions();
 		rm = ReportManager.getInstance();
 		rm.load();
