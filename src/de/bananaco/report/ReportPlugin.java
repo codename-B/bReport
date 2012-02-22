@@ -10,8 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,11 +28,10 @@ public class ReportPlugin extends JavaPlugin {
 		log("Disabled");
 	}
 
-	@Override
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onEnable() {
 		listener = new ReportListener(config);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Normal, this);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, listener, Priority.Normal, this);
+		getServer().getPluginManager().registerEvents(listener, this);
 		registerPermissions();
 		rm = ReportManager.getInstance();
 		rm.load();
