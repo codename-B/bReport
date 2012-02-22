@@ -6,10 +6,12 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 
-public class ReportListener extends PlayerListener {
+public class ReportListener implements Listener {
 	
 	Config config;
 	ReportManager rm = ReportManager.getInstance();
@@ -18,7 +20,7 @@ public class ReportListener extends PlayerListener {
 		this.config = config;
 	}
 	
-	@Override
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerLogin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
 		if(!player.hasPermission("breport.read"))
@@ -47,7 +49,7 @@ public class ReportListener extends PlayerListener {
 			player.sendMessage(ChatColor.RED+"** NOTHING TO REPORT **");	
 	}
 
-	@Override
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerChat(PlayerChatEvent event) {
 		Player player = event.getPlayer();
 		if(player.hasPermission("breport.modchat")) {
