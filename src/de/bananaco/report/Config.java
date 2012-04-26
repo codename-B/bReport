@@ -11,6 +11,9 @@ public class Config {
 	private int levenshtein = 6;
 	private int ticketDisplay = 7;
 	private boolean showMessage = false;
+	public String mailHost = "localhost";
+	public boolean useMail = false;
+	public String to = "test@test.com";
 	
 	/**
 	 * The "distance" required between Strings
@@ -30,6 +33,18 @@ public class Config {
 		return ticketDisplay;
 	}
 	
+	public String getHost() {
+		return mailHost;
+	}
+	
+	public boolean useMail() {
+		return useMail;
+	}
+	
+	public String getMailTo() {
+		return to;
+	}
+	
 	/**
 	 * Loads the config.yml
 	 */
@@ -41,9 +56,18 @@ public class Config {
 			this.levenshtein = config.getInt("levenshtein", this.levenshtein);
 			this.ticketDisplay = config.getInt("ticket-display", this.ticketDisplay);			
 			this.showMessage = config.getBoolean("show-message", showMessage);
+			// Set the new values
+			this.useMail = config.getBoolean("use-mail", useMail);
+			this.mailHost = config.getString("mail-host", mailHost);
+			this.to = config.getString("mail-to", to);
+			// Write the values
 			config.set("levenshtein", this.levenshtein);
 			config.set("ticket-display", this.ticketDisplay);
 			config.set("show-message", showMessage);
+			// Write the new values
+			config.set("use-mail", useMail);
+			config.set("mail-host", mailHost);
+			config.set("mail-to", to);
 			// Save the file
 			config.save(file);
 		} catch (Exception e) {

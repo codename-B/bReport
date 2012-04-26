@@ -5,13 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,8 +30,7 @@ public class ReportPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		listener = new ReportListener(config);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Normal, this);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, listener, Priority.Normal, this);
+		getServer().getPluginManager().registerEvents(listener, this);
 		registerPermissions();
 		rm = ReportManager.getInstance();
 		rm.load();
@@ -100,6 +98,12 @@ public class ReportPlugin extends JavaPlugin {
 				// And file the report
 				Report r = rm.createReport(reporter, report, ((Player) sender).getLocation());
 				sender.sendMessage(ChatColor.AQUA+"[bR] "+ChatColor.GRAY+"A report has been filed for you - ID: "+ChatColor.AQUA+r.getID());
+				if(config.useMail()) {
+					String to = config.getMailTo();
+					String host = config.getHost();
+					String from = "noreply@"+Bukkit.getServer().getIp();
+					SendMail.mail(host, to, from, "New Ticket!", r.getReporter()+" has filed ticket #"+r.getID()+": "+r.getReport());
+				}
 				// Inform all online admins
 				for(Player player : getServer().getOnlinePlayers()) {
 					if(player.hasPermission("breport.read")) {
