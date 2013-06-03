@@ -1,23 +1,27 @@
 package de.bananaco.report.listeners;
 
 import de.bananaco.report.Config;
+import de.bananaco.report.ReportPlugin;
+import de.bananaco.report.msg.MessageManager;
+import de.bananaco.report.msg.Msg;
 import de.bananaco.report.report.Report;
 import de.bananaco.report.report.ReportManager;
 import java.util.List;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 
 public class ReportListener implements Listener {
 
     private Config config;
-    private ReportManager rm = ReportManager.getInstance();
+    private ReportManager rm;
+    private MessageManager mm;
 
-    public ReportListener(Config config) {
-        this.config = config;
+    public ReportListener(ReportPlugin plugin) {
+        this.config = plugin.getConf();
+        this.rm = plugin.getReportManager();
+        this.mm = plugin.getMsgManager();
     }
 
     @EventHandler
@@ -33,9 +37,11 @@ public class ReportListener implements Listener {
 
         // New line for each report
         if (reports.size() > 0) {
-            player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "There are " + ChatColor.AQUA + reports.size() + ChatColor.GRAY + " unread reports");
+            //player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "There are " + ChatColor.AQUA + reports.size() + ChatColor.GRAY + " unread reports");
+            mm.msg(player, Msg.ON_JOIN, reports.size());
+            
         } else {
-            player.sendMessage(ChatColor.RED + "** NOTHING TO REPORT **");
+            player.sendMessage(mm.getMsg(Msg.NO_REPORTS));
         }
     }
 

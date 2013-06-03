@@ -4,9 +4,12 @@ import de.bananaco.report.commands.Commands;
 import de.bananaco.report.listeners.ModChat;
 import de.bananaco.report.listeners.ReportListener;
 import de.bananaco.report.report.ReportManager;
+import de.bananaco.report.msg.MessageManager;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -20,11 +23,13 @@ public class ReportPlugin extends JavaPlugin {
     private ReportListener listener;
     private ModChat modchat;
     private Commands command;
+    private MessageManager msgManager;
 
     public ReportPlugin() {
-        this.rm = ReportManager.getInstance();
-        this.config = new Config();
-        this.listener = new ReportListener(config);
+        this.msgManager = new MessageManager(this);
+        this.rm = new ReportManager(this);
+        this.config = new Config(this);
+        this.listener = new ReportListener(this);
         this.modchat = new ModChat();
         this.command = new Commands(this);
     }
@@ -46,17 +51,20 @@ public class ReportPlugin extends JavaPlugin {
         getCommand("unresolve").setExecutor(command);
         getCommand("modchat").setExecutor(command);
         registerPermissions();
+        msgManager.load();
         rm.load();
         config.load();
         log("Enabled");
     }
 
     public void log(String message) {
-        this.getLogger().log(Level.INFO, "[bR] {0}", message);
+        String newMessage = ChatColor.stripColor(message);
+        this.getLogger().log(Level.INFO, "{0}", newMessage);
     }
 
     public void log(String message, Level level) {
-        this.getLogger().log(level, "[bR] {0}", message);
+        String newMessage = ChatColor.stripColor(message);
+        this.getLogger().log(level, "{0}", newMessage);
     }
 
     public void registerPermissions() {
@@ -89,5 +97,13 @@ public class ReportPlugin extends JavaPlugin {
 
     public Config getConf() {
         return this.config;
+    }
+
+    public MessageManager getMsgManager() {
+        return this.msgManager;
+    }
+
+    public File getDirectory(String Directory_Name) {
+        return new File(getDataFolder(), Directory_Name);
     }
 }

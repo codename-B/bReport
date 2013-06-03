@@ -2,6 +2,8 @@ package de.bananaco.report.commands;
 
 import de.bananaco.report.Config;
 import de.bananaco.report.ReportPlugin;
+import de.bananaco.report.msg.MessageManager;
+import de.bananaco.report.msg.Msg;
 import de.bananaco.report.report.Report;
 import de.bananaco.report.report.ReportManager;
 import de.bananaco.report.report.SendMail;
@@ -25,12 +27,13 @@ public class Commands extends JavaPlugin {
     private ReportPlugin rp;
     private ReportManager rm;
     private Config config;
+    private MessageManager mm;
 
     public Commands(ReportPlugin rp) {
         this.rp = rp;
         this.rm = rp.getReportManager();
         this.config = rp.getConf();
-
+        this.mm = rp.getMsgManager();
     }
 
     @Override
@@ -40,7 +43,8 @@ public class Commands extends JavaPlugin {
         // Permission check for players
         if (sender instanceof Player) {
             if (!sender.hasPermission("breport." + cname)) {
-                sender.sendMessage(ChatColor.RED + "[bR] You don't have permission to use the '/" + cname + "' command.");
+                //sender.sendMessage(ChatColor.RED + "[bR] You don't have permission to use the '/" + cname + "' command.");
+                mm.msg(sender, Msg.PERMISSION, "'/" + cname + "' command.");
                 return true;
             }
         }
@@ -51,8 +55,9 @@ public class Commands extends JavaPlugin {
                 String reporter = sender.getName();
                 String[] report = args;
                 // How many words?
-                if (report.length < 3) {
-                    sender.sendMessage(ChatColor.RED + "[bR] Reports must be at least 3 words long.");
+                if (report.length < config.getReportLength()) {
+                    //sender.sendMessage(ChatColor.RED + "[bR] Reports must be at least 3 words long.");
+                    mm.msg(sender, Msg.REPORT_LENGTH, config.getReportLength());
                     return true;
                 }
                 // How many reports has the user filed before?
@@ -69,12 +74,14 @@ public class Commands extends JavaPlugin {
                 }
                 // And shout at them if there's too many similar reports
                 if (num > 0) {
-                    sender.sendMessage(ChatColor.RED + "[bR] You already have a ticket about that.");
+                    //sender.sendMessage(ChatColor.RED + "[bR] You already have a ticket about that.");
+                    mm.msg(sender, Msg.TICKET_CLONE);
                     return true;
                 }
                 // And file the report
                 Report r = rm.createReport(reporter, report, ((Player) sender).getLocation());
-                sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A report has been filed for you - ID: " + ChatColor.AQUA + r.getID());
+                //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A report has been filed for you - ID: " + ChatColor.AQUA + r.getID());
+                mm.msg(sender, Msg.REPORT_FILED_YOU, r.getID());
                 if (config.useMail()) {
                     String to = config.getMailTo();
                     String host = config.getHost();
@@ -84,14 +91,16 @@ public class Commands extends JavaPlugin {
                 // Inform all online admins
                 for (Player player : rp.getServer().getOnlinePlayers()) {
                     if (player.hasPermission("breport.read")) {
-                        player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A new report has been filed by " + ChatColor.AQUA + reporter + ChatColor.GRAY + " - ID: " + ChatColor.AQUA + r.getID());
+                        //player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A new report has been filed by " + ChatColor.AQUA + reporter + ChatColor.GRAY + " - ID: " + ChatColor.AQUA + r.getID());
+                        mm.msg(sender, Msg.REPORT_FILED, reporter, r.getID());
                     }
                 }
                 // Log to console too
-                rp.log("A new report has been filed by " + reporter + " - ID: " + r.getID());
+                rp.log(mm.getMsg(Msg.REPORT_FILED, reporter, r.getID()));
                 return true;
             } else {
-                sender.sendMessage(ChatColor.RED + "[bR] Only players can use the '/report' command!");
+                //sender.sendMessage(ChatColor.RED + "[bR] Only players can use the '/report' command!");
+                mm.msg(sender, Msg.INGAMECOMMAND, "/report");
                 return true;
             }
         } else if (cname.equals("read")) {
@@ -107,85 +116,103 @@ public class Commands extends JavaPlugin {
                 for (int i = show; i >= 0; i--) {
                     Report r = reports.get(i);
                     // Build the String
-                    prints.add(ChatColor.AQUA + r.getReporter() + ChatColor.GRAY + " - ID: " + ChatColor.AQUA + r.getID());
+                    //prints.add(ChatColor.AQUA + r.getReporter() + ChatColor.GRAY + " - ID: " + ChatColor.AQUA + r.getID());
+                    prints.add(mm.getMsg(Msg.REPORT_READ, r.getReporter(), r.getID()));
                     shown++;
                 }
-                sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Showing " + ChatColor.AQUA + shown + "/" + reports.size() + ChatColor.GRAY + " unread reports");
+                //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Showing " + ChatColor.AQUA + shown + "/" + reports.size() + ChatColor.GRAY + " unread reports");
+                mm.msg(sender, Msg.SHOWING_REPORT, shown, reports.size());
                 // New line for each report
                 if (reports.size() > 0) {
                     for (int i = 0; i < prints.size(); i++) {
                         sender.sendMessage(prints.get(i));
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "** NOTHING TO REPORT **");
+                    //sender.sendMessage(ChatColor.RED + "** NOTHING TO REPORT **");
+                    mm.msg(sender, Msg.NO_REPORTS);
                 }
                 return true;
             } else {
                 String id = args[0];
                 if (rm.getReport(id) == null) {
-                    sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                    //sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                    mm.msg(sender, Msg.UNSOLVED_REPORTS, "read");
                     return true;
                 } else {
                     Report report = rm.getReport(id);
                     // Send the report data
-                    sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Reporter: " + ChatColor.AQUA + report.getReporter() + ChatColor.GRAY + " ID: " + ChatColor.AQUA + report.getID());
-                    sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Status: " + ChatColor.AQUA + (report.getResolved() ? "resolved" : "open"));
-                    sender.sendMessage(ChatColor.GRAY + "** " + report.getReport());
+                    //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Reporter: " + ChatColor.AQUA + report.getReporter() + ChatColor.GRAY + " ID: " + ChatColor.AQUA + report.getID());
+                    mm.msg(sender, Msg.READ_REPORTER, report.getReporter(), report.getID());
+                    //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Status: " + ChatColor.AQUA + (report.getResolved() ? "resolved" : "open"));
+                    mm.msg(sender, Msg.READ_STATUS, (report.getResolved() ? "resolved" : "open"));
+                    //sender.sendMessage(ChatColor.GRAY + "** " + report.getReport());
+                    mm.msg(sender, Msg.READ_REPORT, report.getReport());
                     return true;
                 }
             }
         } else if (cname.equals("resolve") && args.length > 0) {
             String id = args[0];
             if (rm.getReport(id) == null) {
-                sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                //sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                mm.msg(sender, Msg.UNSOLVED_REPORTS, "read");
                 return true;
             } else {
                 Report report = rm.getReport(id);
                 if (report.getResolved()) {
-                    sender.sendMessage(ChatColor.RED + "[bR] That report is already resolved!");
+                    //sender.sendMessage(ChatColor.RED + "[bR] That report is already resolved!");
+                    mm.msg(sender, Msg.REPORT_WAS_RESOLVED);
                     return true;
                 }
                 report.setResolved(true);
-                sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Report resolved.");
+                //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Report resolved.");
+                mm.msg(sender, Msg.REPORT_IS_RESOLVED);
                 // Inform the player that their report has been resolved if they are online
                 if (rp.getServer().getPlayerExact(report.getReporter()) != null) {
                     Player player = rp.getServer().getPlayerExact(report.getReporter());
-                    player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A report you filed has been resolved by " + ChatColor.AQUA + rp.getName(sender));
-                    player.sendMessage(ChatColor.GRAY + "** " + report.getReport());
+                    //player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A report you filed has been resolved by " + ChatColor.AQUA + rp.getName(sender));
+                    mm.msg(sender, Msg.REPORT_RESOLVED, rp.getName(sender));
+                    //player.sendMessage(ChatColor.GRAY + "** " + report.getReport());
+                    mm.msg(sender, Msg.READ_REPORT, report.getReport());
                 }
                 return true;
             }
         } else if (cname.equals("unresolve") && args.length > 0) {
             String id = args[0];
             if (rm.getReport(id) == null) {
-                sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                //sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                mm.msg(sender, Msg.UNSOLVED_REPORTS, "read");
                 return true;
             } else {
                 Report report = rm.getReport(id);
                 if (!report.getResolved()) {
-                    sender.sendMessage(ChatColor.RED + "[bR] That report is not yet resolved!");
+                    //sender.sendMessage(ChatColor.RED + "[bR] That report is not yet resolved!");
+                    mm.msg(sender, Msg.REPORT_IS_UNRESOLVED);
                     return true;
                 }
                 report.setResolved(false);
-                sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Report unresolved.");
+                //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Report unresolved.");
+                mm.msg(sender, Msg.REPORT_UNRESOLVED);
                 return true;
             }
         } else if (cname.equals("gotoreport") && args.length > 0) {
             // Again, only players can do this one
             if (!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "[bR] Only players can use the '/gotoreport' command!");
+                //sender.sendMessage(ChatColor.RED + "[bR] Only players can use the '/gotoreport' command!");
+                mm.msg(sender, Msg.INGAMECOMMAND, "/gotoreport");
                 return true;
             }
             String id = args[0];
             if (rm.getReport(id) == null) {
-                sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                mm.msg(sender, Msg.UNSOLVED_REPORTS, "read");
+                //sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
                 return true;
             } else {
                 Player player = (Player) sender;
                 Report r = rm.getReport(id);
                 Location loc = r.getLocation();
                 player.teleport(loc);
-                sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Teleported to the location of the report - ID: " + ChatColor.AQUA + r.getID());
+                //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Teleported to the location of the report - ID: " + ChatColor.AQUA + r.getID());
+                mm.msg(sender, Msg.REPORT_TELEPORT, r.getID());
                 return true;
             }
         } else if (cname.equals("modchat") && args.length > 0) {
@@ -199,7 +226,7 @@ public class Commands extends JavaPlugin {
             // Send the message to online mods/admins
             for (Player player : rp.getServer().getOnlinePlayers()) {
                 if (player.hasPermission("breport.modchat")) {
-                    player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + name + ChatColor.AQUA + ": " + message);
+                    player.sendMessage(ChatColor.AQUA + mm.getName() + ChatColor.GRAY + name + ChatColor.AQUA + ": " + message);
                 }
             }
             // Also log it to the console
