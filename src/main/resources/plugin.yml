@@ -1,6 +1,6 @@
 name: bReport
-version: 1.5.1
-author: codename_B
+version: 1.5.7
+author: [codename_B, ProjectBarks]
 website: http://tetragaming.com/codename_B/
 main: de.bananaco.report.ReportPlugin
 commands:
@@ -17,4 +17,6 @@ commands:
     modchat:
         aliases: [mc, mod]
         usage: /<command> message
+    comment:
+        usage: /<command> id [message]
         

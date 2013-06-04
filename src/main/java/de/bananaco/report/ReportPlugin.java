@@ -3,8 +3,8 @@ package de.bananaco.report;
 import de.bananaco.report.commands.Commands;
 import de.bananaco.report.listeners.ModChat;
 import de.bananaco.report.listeners.ReportListener;
-import de.bananaco.report.report.ReportManager;
 import de.bananaco.report.msg.MessageManager;
+import de.bananaco.report.report.ReportManager;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +50,7 @@ public class ReportPlugin extends JavaPlugin {
         getCommand("resolve").setExecutor(command);
         getCommand("unresolve").setExecutor(command);
         getCommand("modchat").setExecutor(command);
+        getCommand("comment").setExecutor(command);
         registerPermissions();
         msgManager.load();
         rm.load();
@@ -76,6 +77,7 @@ public class ReportPlugin extends JavaPlugin {
         children.put("breport.resolve", true);
         children.put("breport.unresolve", true);
         children.put("breport.modchat", true);
+        children.put("breport.comment", true);
         // Put them under a parent
         Permission perm = new Permission("breport.*", PermissionDefault.OP, children);
         getServer().getPluginManager().addPermission(perm);

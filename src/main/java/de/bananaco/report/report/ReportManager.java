@@ -3,6 +3,7 @@ package de.bananaco.report.report;
 import de.bananaco.report.ReportPlugin;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,35 +34,32 @@ public class ReportManager {
             }
         }
     };
-    
     private ReportPlugin rp;
-
-
     private Map<String, Report> reports = new HashMap<String, Report>();
     private File file = new File("plugins/bReport/reports.yml");
     private final YamlConfiguration config = new YamlConfiguration();
+
     public ReportManager(ReportPlugin rp) {
         this.rp = rp;
     }
-
 
     /**
      * Intended to be used to create a report directly from onCommand
      *
      * @param reporter
      * @param report
-     * @param location 
+     * @param location
      * @return Report created
      */
     public Report createReport(String reporter, String[] report, Location location) {
-    String id = String.valueOf(reports.size());
-    StringBuilder sb = new StringBuilder();
-    for (String r : report) {
-        sb.append(r).append(" ");
+        String id = String.valueOf(reports.size());
+        StringBuilder sb = new StringBuilder();
+        for (String r : report) {
+            sb.append(r).append(" ");
+        }
+        reports.put(id, new Report(reporter, sb.toString(), id, location));
+        return reports.get(id);
     }
-    reports.put(id, new Report(reporter, sb.toString(), id, location));
-    return reports.get(id);
-}
 
     /**
      * For use externally printing an args[]
@@ -73,6 +71,27 @@ public class ReportManager {
         StringBuilder sb = new StringBuilder();
         for (String r : report) {
             sb.append(r).append(" ");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * For use externally printing an args[]
+     *
+     * @param report
+     * @param skip 
+     * @return String
+     */
+    public String getString(String[] report, Integer... skip) {
+        StringBuilder sb = new StringBuilder();
+        List<Integer> skipList = new ArrayList<Integer>();
+        skipList.addAll(Arrays.asList(skip));
+        Integer count = 0;
+        for (String r : report) {
+            if (!(skipList.contains(count))) {
+                sb.append(r).append(" ");
+            }
+            count++;
         }
         return sb.toString();
     }
@@ -126,9 +145,13 @@ public class ReportManager {
                     reporter = config.getString(key + ".reporter");
                     report = config.getString(key + ".report");
                     resolved = config.getBoolean(key + ".resolved");
-                    location = getLocation(config.getString(key + ".location", "world.0.70.0"));
+                    location = getLocation(config.getString(key + ".location", "world,0,70,0.0.0"));
                     id = key;
-                    reports.put(id, new Report(reporter, report, resolved, id, location));
+                    Report r = new Report(reporter, report, resolved, id, location);
+                    for (String s : config.getStringList(key + ".comments")) {
+                        r.getComments().add(s);
+                    }
+                    reports.put(id, r);
                 }
             }
         } catch (Exception e) {
@@ -148,6 +171,7 @@ public class ReportManager {
                 config.set(report.getID() + ".report", report.getReport());
                 config.set(report.getID() + ".resolved", report.getResolved());
                 config.set(report.getID() + ".location", getLocation(report.getLocation()));
+                config.set(report.getID() + ".comments", report.getComments().toArray());
             }
         }
         try {
@@ -185,7 +209,10 @@ public class ReportManager {
         int x = Integer.parseInt(data[1]);
         int y = Integer.parseInt(data[2]);
         int z = Integer.parseInt(data[3]);
-        return new Location(world, x, y, z);
+        Location loc = new Location(world, x, y, z);
+        loc.setYaw(Float.valueOf(data[4]));
+        loc.setPitch(Float.valueOf(data[5]));
+        return loc;
     }
 
     /**
@@ -195,6 +222,6 @@ public class ReportManager {
      * @return String
      */
     protected String getLocation(Location input) {
-        return input.getWorld().getName() + "," + input.getBlockX() + "," + input.getBlockY() + "," + input.getBlockZ();
+        return input.getWorld().getName() + "," + input.getBlockX() + "," + input.getBlockY() + "," + input.getBlockZ() + "," + input.getYaw() + "," + input.getPitch();
     }
 }

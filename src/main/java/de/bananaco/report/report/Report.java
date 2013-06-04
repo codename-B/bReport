@@ -1,5 +1,7 @@
 package de.bananaco.report.report;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Location;
 
 /**
@@ -10,9 +12,12 @@ import org.bukkit.Location;
 public class Report {
 
     private final String reporter;
+    private final List<String> comments;
     private final String report;
     private final String id;
     private final Location location;
+    private final float yaw;
+    private final float pitch;
     private boolean resolved;
 
     protected Report(String reporter, String report, String id, Location location) {
@@ -25,6 +30,9 @@ public class Report {
         this.id = id;
         this.resolved = resolved;
         this.location = location;
+        this.yaw = location.getYaw();
+        this.pitch = location.getPitch();
+        this.comments = new ArrayList<String>();
     }
 
     /**
@@ -79,6 +87,28 @@ public class Report {
      */
     public boolean getResolved() {
         return resolved;
+    }
+
+    /**
+     * Returns the yaw of the location given in the object
+     *
+     * @return
+     */
+    public float getYaw() {
+        return yaw;
+    }
+
+    /**
+     * Returns the pitch of the location given in the object
+     *
+     * @return
+     */
+    public float getPitch() {
+        return pitch;
+    }
+    
+    public List<String> getComments() {
+        return this.comments;
     }
 
     @Override

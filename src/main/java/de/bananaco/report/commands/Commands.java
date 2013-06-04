@@ -92,7 +92,9 @@ public class Commands extends JavaPlugin {
                 for (Player player : rp.getServer().getOnlinePlayers()) {
                     if (player.hasPermission("breport.read")) {
                         //player.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "A new report has been filed by " + ChatColor.AQUA + reporter + ChatColor.GRAY + " - ID: " + ChatColor.AQUA + r.getID());
-                        mm.msg(sender, Msg.REPORT_FILED, reporter, r.getID());
+                        if (!((Player) sender).getName().equals(player.getName())) {
+                            mm.msg(sender, Msg.REPORT_FILED, reporter, r.getID());
+                        }
                     }
                 }
                 // Log to console too
@@ -211,10 +213,40 @@ public class Commands extends JavaPlugin {
                 Report r = rm.getReport(id);
                 Location loc = r.getLocation();
                 player.teleport(loc);
+                player.getLocation().setYaw(r.getYaw());
+                player.getLocation().setPitch(r.getPitch());
                 //sender.sendMessage(ChatColor.AQUA + "[bR] " + ChatColor.GRAY + "Teleported to the location of the report - ID: " + ChatColor.AQUA + r.getID());
                 mm.msg(sender, Msg.REPORT_TELEPORT, r.getID());
                 return true;
             }
+        } else if (cname.equals("comment")) {
+            Report report;
+            if (args.length >= 1) {
+                report = rm.getReport(args[0]);
+                if (report == null) {
+                    mm.msg(sender, Msg.UNSOLVED_REPORTS, "read");
+                    //sender.sendMessage(ChatColor.RED + "[bR] No report with that id, use '/read' to see all unresolved reports.");
+                    return true;
+                }
+            } else {
+                mm.msg(sender, Msg.UNSOLVED_REPORTS, "read");
+                return true;
+            }
+            if (args.length > 1) {
+                String message = rm.getString(args, 0);
+                report.getComments().add("&b" + sender.getName() + "&7" + ": " + message);
+                mm.msg(sender, Msg.COMMENT_ADD, report.getID());
+            } else {
+                if (report.getComments().size() > 0) {
+                    mm.msg(sender, Msg.COMMENT, report.getComments().size(), report.getID());
+                    for (String comment : report.getComments()) {
+                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', " - " + comment));
+                    }
+                } else {
+                    mm.msg(sender, Msg.NO_COMMENTS);
+                }
+            }
+            return true;
         } else if (cname.equals("modchat") && args.length > 0) {
             String name = rp.getName(sender);
 
@@ -233,6 +265,7 @@ public class Commands extends JavaPlugin {
             rp.log(name + ": " + message);
             return true;
         }
+
         return false;
     }
 
