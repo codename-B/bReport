@@ -79,7 +79,7 @@ public class ReportManager {
      * For use externally printing an args[]
      *
      * @param report
-     * @param skip 
+     * @param skip
      * @return String
      */
     public String getString(String[] report, Integer... skip) {
@@ -210,8 +210,18 @@ public class ReportManager {
         int y = Integer.parseInt(data[2]);
         int z = Integer.parseInt(data[3]);
         Location loc = new Location(world, x, y, z);
-        loc.setYaw(Float.valueOf(data[4]));
-        loc.setPitch(Float.valueOf(data[5]));
+        float yaw;
+
+        float pitch;
+        if (data.length >= 5) {
+            yaw = Float.valueOf(data[4]);
+            pitch = Float.valueOf(data[5]);
+        } else {
+            yaw = 0;
+            pitch = 0;
+        }
+        loc.setYaw(yaw);
+        loc.setPitch(Float.valueOf(pitch));
         return loc;
     }
 
